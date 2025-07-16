@@ -16,22 +16,22 @@
             @csrf
             {{-- <input type="hidden" name="usulan_id" value="{{ $data_usulanpkl->id_usulan }}"> --}}
 
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <label for="tgl_awal">Tanggal Awal:</label>
                 <input type="date" name="tgl_awal" id="tgl_awal" class="form-control" required>
             </div>
 
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <label for="tgl_akhir">Tanggal Akhir:</label>
                 <input type="date" name="tgl_akhir" id="tgl_akhir" class="form-control" required>
             </div>
 
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <label for="kegiatan">Kegiatan Selama Seminggu:</label>
                 <textarea name="kegiatan" id="kegiatan" rows="3" class="form-control" required></textarea>
             </div>
 
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <label for="laporan" class="form-label">Upload File</label>
                 <input type="file" name="laporan" class="form-control" id="laporan" accept=".pdf,.doc,.docx">
             </div>
@@ -41,5 +41,5 @@
             </div>
         </form>
     </div>
-    </div>
+    
     @endsection

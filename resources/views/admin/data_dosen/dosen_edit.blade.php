@@ -147,7 +147,7 @@
 
 
                                     <!-- Status -->
-                                    <div class="form-group">
+                                    <div class="form-group mb-3">
                                         <label for="status">Status</label>
                                         <select name="status" id="status" class="form-control">
                                             <option value="1" {{ $dosen->status == 1 ? 'selected' : '' }}>Aktif
