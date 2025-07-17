@@ -17,6 +17,12 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+Route::get('/home', function () {
+    //dd('Route berfungsi');
+    return view('landingpage');
+});
+
+
 // Rute Login
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);

@@ -64,7 +64,7 @@
             <div class="card-body">
               <!-- Logo -->
               <div class="app-brand justify-content-center">
-                <a href="index.html" class="app-brand-link gap-2">
+                <a href="{{ url('/home') }}" class="app-brand-link gap-2">
 
                   <span class="app-brand-logo demo">
             <img src="{{ asset('images/logo.png') }}" alt="Logo" width="200" height="60">
