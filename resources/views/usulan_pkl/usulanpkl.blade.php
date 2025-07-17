@@ -149,6 +149,7 @@
                             <tr>
                                 <th>Aksi</th>
                                 <td class="action-btns">
+                                    
                                     <form action="{{ route('usulanpkl.destroy', $data->id_usulan) }}" method="POST" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
