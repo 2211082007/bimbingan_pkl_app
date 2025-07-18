@@ -51,7 +51,6 @@ Route::group(['middleware' => ['role:superAdmin|admin|mahasiswa|mahasiswaPkl|pen
 // Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
 
 Route::group(['middleware' => ['role:admin']], function () {
-    //Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     // --- Jurusan ---
     Route::get('/jurusan', [JurusanController::class, 'index'])->name('jurusan');
     Route::post('/jurusan', [JurusanController::class, 'store'])->name('jurusan.store');
