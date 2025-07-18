@@ -53,6 +53,7 @@ Route::group(['middleware' => ['role:superAdmin|admin|mahasiswa|mahasiswaPkl|pen
 Route::group(['middleware' => ['role:admin']], function () {
     // --- Jurusan ---
     Route::get('/jurusan', [JurusanController::class, 'index'])->name('jurusan');
+    Route::get('/jurusan/create', [JurusanController::class, 'create'])->name('jurusan.create');
     Route::post('/jurusan', [JurusanController::class, 'store'])->name('jurusan.store');
     Route::get('/jurusan/{id}/edit', [JurusanController::class, 'edit'])->name('data_jurusan.edit_jurusan');
     Route::put('/jurusan/{id}', [JurusanController::class, 'update'])->name('jurusan.update');

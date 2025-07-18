@@ -107,78 +107,74 @@ class DosenController extends Controller
      * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'id_dosen' => 'required|unique:dosen,id_dosen',
-        'nidn' => 'required|unique:dosen,nidn',
-        'nama' => 'required|string|max:255',
-        'nip' => 'required|unique:dosen,nip',
-        'gender' => 'required|string',
-        'tempt_lahir' => 'required|string',
-        'tgl_lahir' => 'required|date',
-        'pendidikan' => 'required|string',
-        'jurusan_id' => 'required|exists:jurusan,id_jurusan',
-        'prodi_id' => 'required|exists:prodi,id_prodi',
-        'alamat' => 'required|string',
-        'email' => 'required|email|unique:dosen,email',
-        'password' => 'required|string|max:16',
-        'no_hp' => 'required|string',
-        'golongan_id' => 'required|exists:golongan,id_golongan',
-        'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        'status' => 'required|string',
-    ]);
+    {
+        $validated = $request->validate([
+            'id_dosen' => 'required|unique:dosen,id_dosen',
+            'nidn' => 'required|unique:dosen,nidn',
+            'nama' => 'required|string|max:255',
+            'nip' => 'required|unique:dosen,nip',
+            'gender' => 'required|string',
+            'tempt_lahir' => 'required|string',
+            'tgl_lahir' => 'required|date',
+            'pendidikan' => 'required|string',
+            'jurusan_id' => 'required|exists:jurusan,id_jurusan',
+            'prodi_id' => 'required|exists:prodi,id_prodi',
+            'alamat' => 'required|string',
+            'email' => 'required|email|unique:dosen,email',
+            'password' => 'required|string|max:16',
+            'no_hp' => 'required|string',
+            'golongan_id' => 'required|exists:golongan,id_golongan',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'status' => 'required|string',
+        ]);
 
-    // Validate jurusan and prodi consistency
-    $jurusan = DB::table('jurusan')->where('id_jurusan', $validated['jurusan_id'])->first();
-    $prodi = DB::table('prodi')->where('id_prodi', $validated['prodi_id'])->first();
-    if ($prodi->jurusan_id !== $jurusan->id_jurusan) {
-        return redirect()->back()->withErrors(['prodi_id' => 'Prodi tidak sesuai dengan Jurusan yang dipilih.']);
-    }
+        // Validasi konsistensi jurusan dan prodi
+        $jurusan = DB::table('jurusan')->where('id_jurusan', $validated['jurusan_id'])->first();
+        $prodi = DB::table('prodi')->where('id_prodi', $validated['prodi_id'])->first();
+        if ($prodi->jurusan_id !== $jurusan->id_jurusan) {
+            return redirect()->back()->withErrors(['prodi_id' => 'Prodi tidak sesuai dengan Jurusan yang dipilih.']);
+        }
 
-    // Handle image upload
-    $imagePath = null;
-    if ($request->hasFile('image')) {
-        try {
+        // Simpan gambar dosen
+        if ($request->hasFile('image')) {
             $image = $request->file('image');
             $imageName = time() . '.' . $image->getClientOriginalExtension();
-            $image->storeAs('images/dosen', $imageName, 'public');
-            $imagePath = 'images/dosen/' . $imageName;
-        } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['image' => 'Gagal mengunggah gambar: ' . $e->getMessage()]);
+            $image->move(public_path('images/dosen'), $imageName);
+        } else {
+            $imageName = null;
         }
+
+        // Simpan ke tabel dosen
+        DB::table('dosen')->insert([
+            'id_dosen' => $validated['id_dosen'],
+            'nidn' => $validated['nidn'],
+            'nama' => $validated['nama'],
+            'nip' => $validated['nip'],
+            'gender' => $validated['gender'],
+            'tempt_lahir' => $validated['tempt_lahir'],
+            'tgl_lahir' => $validated['tgl_lahir'],
+            'pendidikan' => $validated['pendidikan'],
+            'jurusan_id' => $validated['jurusan_id'],
+            'prodi_id' => $validated['prodi_id'],
+            'alamat' => $validated['alamat'],
+            'email' => $validated['email'],
+            'password' => $validated['password'], // NOTE: belum di-hash untuk dosen (?)
+            'no_hp' => $validated['no_hp'],
+            'golongan_id' => $validated['golongan_id'],
+            'image' => $imageName,
+            'status' => $validated['status'],
+        ]);
+
+        // Buat akun user untuk login
+        $user = User::create([
+            'name' => $validated['nama'],
+            'email' => $validated['email'],
+            'password' => Hash::make($request->password),
+        ]);
+        $user->assignRole('dosen');
+
+        return redirect()->route('dosen')->with('success', 'Dosen berhasil ditambahkan.');
     }
-
-    // Save to dosen table using Eloquent
-    $dosen = Dosen::create([
-        'id_dosen' => $validated['id_dosen'],
-        'nidn' => $validated['nidn'],
-        'nama' => $validated['nama'],
-        'nip' => $validated['nip'],
-        'gender' => $validated['gender'],
-        'tempt_lahir' => $validated['tempt_lahir'],
-        'tgl_lahir' => $validated['tgl_lahir'],
-        'pendidikan' => $validated['pendidikan'],
-        'jurusan_id' => $validated['jurusan_id'],
-        'prodi_id' => $validated['prodi_id'],
-        'alamat' => $validated['alamat'],
-        'email' => $validated['email'],
-        'password' => Hash::make($validated['password']),
-        'no_hp' => $validated['no_hp'],
-        'golongan_id' => $validated['golongan_id'],
-        'image' => $imagePath,
-        'status' => $validated['status'],
-    ]);
-
-    // Create user account
-    $user = User::create([
-        'name' => $validated['nama'],
-        'email' => $validated['email'],
-        'password' => Hash::make($validated['password']),
-    ]);
-    $user->assignRole('dosen');
-
-    return redirect()->route('dosen')->with('success', 'Dosen berhasil ditambahkan.');
-}
 
     /**
      * Menampilkan form edit dosen.
@@ -272,16 +268,11 @@ class DosenController extends Controller
      * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy($id)
-{
-    $dosen = Dosen::findOrFail($id);
-
-    // Check if the image exists before attempting to delete
-    if ($dosen->image) {
+    {
+        $dosen = Dosen::findOrFail($id);
         Storage::disk('public')->delete($dosen->image);
+        $dosen->delete();
+
+        return redirect()->route('dosen')->with('success', 'Dosen berhasil dihapus.');
     }
-
-    $dosen->delete();
-
-    return redirect()->route('dosen')->with('success', 'Dosen berhasil dihapus.');
-}
 }
