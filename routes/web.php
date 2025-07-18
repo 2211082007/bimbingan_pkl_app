@@ -7,6 +7,7 @@ use App\Http\Controllers\DosenController;
 use App\Http\Controllers\JurusanController;
 use App\Http\Controllers\MahasiswaController;
 use App\Http\Controllers\ProdiController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\UsulanPklController;
 use App\Http\Controllers\VerifBimbinganController;
 use App\Http\Controllers\VerifUsulanPklController;
@@ -150,3 +151,5 @@ Route::group(['middleware' => ['role:mahasiswaPkl|pembimbingPkl']], function () 
 //     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 //     Route::put('/profile/update', [DashboardController::class, 'updateProfile'])->name('profile.update');
 // });
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::post('/update-akun', [UserController::class, 'updateAkun'])->name('updateAkun');
