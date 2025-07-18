@@ -11,18 +11,18 @@
                     <h5><b>Informasi</b></h5>
                     <!-- Default Image above Student Information -->
                     <div class="text-center mb-3">
-    @if(Auth::user()->mahasiswa && Auth::user()->mahasiswa->image)
-        <img src="{{ asset('images/mahasiswa/' . Auth::user()->mahasiswa->image) }}"
-             alt="Foto Mahasiswa"
-             class="img-fluid rounded-circle"
-             style="width: 100px; height: 100px; object-fit: cover;">
-    @else
-        <img src="{{ asset('assets/images/profile-default.png') }}"
-             alt="Default Profile Image"
-             class="img-fluid rounded-circle"
-             style="width: 100px; height: 100px; object-fit: cover;">
-    @endif
-</div>
+                        @if(Auth::user()->mahasiswa && Auth::user()->mahasiswa->image)
+                            <img src="{{ asset('images/mahasiswa/' . Auth::user()->mahasiswa->image) }}"
+                                alt="Foto Mahasiswa"
+                                class="img-fluid rounded-circle"
+                                style="width: 100px; height: 100px; object-fit: cover;">
+                        @else
+                            <img src="{{ asset('assets/img/profile-default.png') }}"
+                                alt="Default Profile Image"
+                                class="img-fluid rounded-circle"
+                                style="width: 100px; height: 100px; object-fit: cover;">
+                        @endif
+                    </div>
 
                     <!-- Menampilkan data UsulanPKL -->
                     <h6><b>Mahasiswa:</b> {{ $data_mhs->nama }}</h6>

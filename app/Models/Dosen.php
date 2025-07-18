@@ -9,8 +9,8 @@ class Dosen extends Model
 {
     use HasFactory;
 
-    protected $table = 'dosen'; // Pastikan ini adalah nama tabel yang benar
-    protected $primaryKey = 'id_dosen'; // Pastikan ini adalah primary key yang benar
+    protected $table = 'dosen';
+    protected $primaryKey = 'id_dosen'; 
 
     protected $fillable = [
         'nidn', 'nama','nip', 'gender', 'tempt_lahir', 'tgl_lahir',

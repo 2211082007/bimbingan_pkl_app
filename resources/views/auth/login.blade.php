@@ -64,7 +64,7 @@
             <div class="card-body">
               <!-- Logo -->
               <div class="app-brand justify-content-center">
-                <a href="{{ url('/home') }}" class="app-brand-link gap-2">
+                <a href="{{ url('/') }}" class="app-brand-link gap-2">
 
                   <span class="app-brand-logo demo">
             <img src="{{ asset('images/logo.png') }}" alt="Logo" width="200" height="60">
@@ -81,14 +81,14 @@
                     <input type="email" name="email" id="email" class="form-control" placeholder="Enter your email" required>
                 </div>
                <div class="mb-3 form-password-toggle">
-  <label for="password" class="form-label">Password</label>
-  <div class="input-group input-group-merge">
-    <input type="password" name="password" id="password" class="form-control" placeholder="Enter your password" required>
-    <span class="input-group-text cursor-pointer" onclick="togglePassword()">
-      <i class="bx bx-hide" id="togglePasswordIcon"></i>
-    </span>
-  </div>
-</div>
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-group input-group-merge">
+                        <input type="password" name="password" id="password" class="form-control" placeholder="Enter your password" required>
+                        <span class="input-group-text cursor-pointer" onclick="togglePassword()">
+                        <i class="bx bx-hide" id="togglePasswordIcon"></i>
+                        </span>
+                    </div>
+                </div>
 
                 <div class="mb-3">
                   <div class="form-check">

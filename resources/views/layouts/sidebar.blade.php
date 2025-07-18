@@ -26,6 +26,12 @@
     @endhasanyrole
 
     @hasrole('admin')
+    {{-- <li class="menu-item">
+      <a class="menu-link" href="/dashboard">
+        <i class="bx bx-home-circle menu-icon"></i>
+        <div>Dashboard</div>
+      </a>
+    </li> --}}
     <li class="menu-item">
       <a class="menu-link menu-toggle" href="javascript:void(0);">
         <i class="bx bx-folder menu-icon"></i>
@@ -36,8 +42,6 @@
         <li class="menu-item"><a class="menu-link" href="/prodi"><i class="bx bx-clipboard"></i> <div>Prodi</div></a></li>
         <li class="menu-item"><a class="menu-link" href="/mahasiswa"><i class="bx bx-user"></i> <div>Mahasiswa</div></a></li>
         <li class="menu-item"><a class="menu-link" href="/dosen"><i class="bx bx-id-card"></i> <div>Dosen</div></a></li>
-        <li class="menu-item"><a class="menu-link" href="/ruang"><i class="bx bx-building-house"></i> <div>Ruangan</div></a></li>
-        <li class="menu-item"><a class="menu-link" href="/sesi"><i class="bx bx-time"></i> <div>Sesi</div></a></li>
       </ul>
     </li>
     @endhasrole
@@ -79,6 +83,15 @@
       </ul>
     </li>
     @endhasrole
+{{--
+    @hasanyrole('mahasiswa|dosen|mahasiswaPkl|kaprodi|pembimbingPkl')
+    <li class="menu-item">
+      <a class="menu-link" href="/dashboard">
+        <i class="bx bx-home-circle menu-icon"></i>
+        <div>Dashboard</div>
+      </a>
+    </li>
+    @endhasanyrole --}}
 
   </ul>
 </aside>

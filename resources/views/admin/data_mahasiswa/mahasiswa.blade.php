@@ -47,7 +47,6 @@
             <table class="table table-bordered table-striped" id="example" width="100%" cellspacing="0">
                 <thead>
                     <tr class="table-success text-center">
-
                         <th>NO</th>
                         <th>NIM</th>
                         <th>Nama</th>

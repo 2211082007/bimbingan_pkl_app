@@ -13,23 +13,45 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
+/**
+ * Controller untuk mengelola data mahasiswa:
+ * - Menampilkan, menambah, mengedit, menghapus, import/export, dan relasi prodi-jurusan.
+ */
 class MahasiswaController extends Controller
 {
+    /**
+     * Menampilkan seluruh data mahasiswa.
+     *
+     * @return \Illuminate\View\View
+     */
     public function index()
     {
         $data_mahasiswa = DB::table('mahasiswa')
-        ->join('jurusan', 'mahasiswa.jurusan_id', '=', 'jurusan.id_jurusan')
+            ->join('jurusan', 'mahasiswa.jurusan_id', '=', 'jurusan.id_jurusan')
             ->join('prodi', 'mahasiswa.prodi_id', '=', 'prodi.id_prodi')
-            ->select('mahasiswa.*', 'jurusan.jurusan','prodi.prodi')
+            ->select('mahasiswa.*', 'jurusan.jurusan', 'prodi.prodi')
             ->orderBy('id_mhs')
             ->get();
 
         return view('admin.data_mahasiswa.mahasiswa', compact('data_mahasiswa'));
     }
 
-    function export_excel(){
+    /**
+     * Mengekspor data mahasiswa ke file Excel.
+     *
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function export_excel()
+    {
         return Excel::download(new ExportMahasiswa, "mahasiswa.xlsx");
     }
+
+    /**
+     * Mengimpor data mahasiswa dari file Excel.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function import_excel(Request $request)
     {
         $request->validate([
@@ -40,75 +62,90 @@ class MahasiswaController extends Controller
         $name_file = rand() . $file->getClientOriginalName();
         $file->move(public_path('file_mahasiswa'), $name_file);
 
-        Excel::import(new ImportMahasiswa, public_path('file_mahasiswa/'.$name_file));
+        Excel::import(new ImportMahasiswa, public_path('file_mahasiswa/' . $name_file));
+
         return back()->with('success', 'File has been imported successfully');
     }
 
-
+    /**
+     * Menampilkan form tambah mahasiswa baru.
+     *
+     * @return \Illuminate\View\View
+     */
     public function create()
     {
-        $data_jurusan = DB::table('jurusan')->get(); // Get all jurusan for the dropdown
-        $data_prodi = DB::table('prodi')->get(); // Get all prodi for the dropdown
+        $data_jurusan = DB::table('jurusan')->get();
+        $data_prodi = DB::table('prodi')->get();
+
         return view('admin.data_mahasiswa.form_mahasiswa', compact('data_jurusan', 'data_prodi'));
     }
+
+    /**
+     * Menampilkan detail data mahasiswa berdasarkan ID.
+     *
+     * @param int $id_mhs
+     * @return \Illuminate\View\View
+     */
     public function show($id_mhs)
     {
-        // Mengambil data mahasiswa berdasarkan id beserta data prodi-nya
         $mahasiswa = DB::table('mahasiswa')
-        ->join('jurusan', 'mahasiswa.jurusan_id', '=', 'jurusan.id_jurusan')
-        ->join('prodi', 'mahasiswa.prodi_id', '=', 'prodi.id_prodi')
-            ->select('mahasiswa.*', 'jurusan.jurusan','prodi.prodi')
+            ->join('jurusan', 'mahasiswa.jurusan_id', '=', 'jurusan.id_jurusan')
+            ->join('prodi', 'mahasiswa.prodi_id', '=', 'prodi.id_prodi')
+            ->select('mahasiswa.*', 'jurusan.jurusan', 'prodi.prodi')
             ->where('mahasiswa.id_mhs', $id_mhs)
             ->first();
 
-        // Kirim data mahasiswa ke view detailMahasiswa
         return view('admin.data_mahasiswa.detail_mahasiswa', compact('mahasiswa'));
     }
 
+    /**
+     * Mengembalikan daftar prodi berdasarkan ID jurusan (digunakan untuk AJAX dinamis).
+     *
+     * @param int $jurusan_id
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getProdi($jurusan_id)
-{
-    $prodi = Prodi::where('jurusan_id', $jurusan_id)->get();
-    return response()->json($prodi);
-}
+    {
+        $prodi = Prodi::where('jurusan_id', $jurusan_id)->get();
+        return response()->json($prodi);
+    }
 
-
+    /**
+     * Menyimpan data mahasiswa baru ke database.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(Request $request)
     {
-        // Validasi input
         $validatedData = $request->validate([
             'nim' => 'required|unique:mahasiswa,nim',
             'nama' => 'required|string|max:255',
-            'jurusan_id' => 'required|exists:jurusan,id_jurusan', // Corrected
-            'prodi_id' => 'required|exists:prodi,id_prodi', // Ensure this is valid
+            'jurusan_id' => 'required|exists:jurusan,id_jurusan',
+            'prodi_id' => 'required|exists:prodi,id_prodi',
             'gender' => 'required|string',
             'email' => 'required|string|max:20',
             'password' => 'required|string|max:16',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // Validasi file image
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
+        // Cek kesesuaian prodi dan jurusan
         $jurusan = DB::table('jurusan')->where('id_jurusan', $validatedData['jurusan_id'])->first();
         $prodi = DB::table('prodi')->where('id_prodi', $validatedData['prodi_id'])->first();
         if ($prodi->jurusan_id !== $jurusan->id_jurusan) {
             return redirect()->back()->withErrors(['prodi_id' => 'Prodi tidak sesuai dengan Jurusan yang dipilih.']);
         }
-        // Proses upload file gambar
+
+        // Proses upload gambar jika ada
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            // Buat nama unik untuk gambar dengan menambahkan timestamp
             $imageName = time() . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('images/mahasiswa'), $imageName);
         } else {
             $imageName = null;
         }
 
-
-        // Handle upload gambar jika ada
-        // $imagePath = $request->hasFile('image')
-        // ? $request->file('image')->storeAs('Images/mahasiswa',
-        // $request->file('image')->getClientOriginalName(), 'public')
-        // : 'images/mahasiswa/default.jpg';
-
-        // Insert data mahasiswa ke database
+        // Simpan data mahasiswa
         DB::table('mahasiswa')->insert([
             'nim' => $validatedData['nim'],
             'nama' => $validatedData['nama'],
@@ -119,55 +156,66 @@ class MahasiswaController extends Controller
             'password' => $validatedData['password'],
             'image' => $imageName,
         ]);
+
+        // Buat akun user
         $user = User::create([
             'name' => $request->nama,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
-        if ($user) {
-            if (!$user->hasRole('mahasiswa')) {
-                $user->assignRole('mahasiswa');
-            }
+        if ($user && !$user->hasRole('mahasiswa')) {
+            $user->assignRole('mahasiswa');
         }
 
-        return redirect()->route('mahasiswa')
-            ->with('success', 'Mahasiswa berhasil ditambahkan.');
+        return redirect()->route('mahasiswa')->with('success', 'Mahasiswa berhasil ditambahkan.');
     }
 
+    /**
+     * Menampilkan form edit data mahasiswa.
+     *
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
     public function edit($id)
     {
-        $mahasiswa = Mahasiswa::findOrFail($id); // Cari mahasiswa berdasarkan id_mhs
-        $data_jurusan = DB::table('jurusan')->get(); // Ambil data jurusan untuk dropdown
-        $data_prodi = DB::table('prodi')->get(); // Ambil data prodi untuk dropdown
+        $mahasiswa = Mahasiswa::findOrFail($id);
+        $data_jurusan = DB::table('jurusan')->get();
+        $data_prodi = DB::table('prodi')->get();
 
         return view('admin.data_mahasiswa.mahasiswa_edit', compact('mahasiswa', 'data_jurusan', 'data_prodi'));
     }
 
+    /**
+     * Memperbarui data mahasiswa berdasarkan ID.
+     *
+     * @param Request $request
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function update(Request $request, $id)
     {
-        // Validasi input
         $validatedData = $request->validate([
             'nim' => 'required|unique:mahasiswa,nim,' . $id . ',id_mhs',
             'nama' => 'required|string|max:255',
-            'jurusan_id' => 'required|exists:jurusan,id_jurusan', // Corrected
+            'jurusan_id' => 'required|exists:jurusan,id_jurusan',
             'prodi_id' => 'required|exists:prodi,id_prodi',
             'gender' => 'required|string',
-            'email' => 'nullable|string|email|unique:mahasiswa,email,' . $id . ',id_mhs', // Unique validation ignoring the current email
-            'password' => 'nullable|string|min:6|confirmed', // Optional password field
+            'email' => 'nullable|string|email|unique:mahasiswa,email,' . $id . ',id_mhs',
+            'password' => 'nullable|string|min:6|confirmed',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         $mahasiswa = Mahasiswa::findOrFail($id);
 
-        // Optional: Check if the selected prodi_id belongs to the selected jurusan_id
+        // Validasi jurusan-prodi konsisten
         $jurusan = DB::table('jurusan')->where('id_jurusan', $validatedData['jurusan_id'])->first();
         $prodi = DB::table('prodi')->where('id_prodi', $validatedData['prodi_id'])->first();
         if ($prodi->jurusan_id !== $jurusan->id_jurusan) {
             return redirect()->back()->withErrors(['prodi_id' => 'Prodi tidak sesuai dengan Jurusan yang dipilih.']);
         }
 
-        // Handle upload gambar jika ada
+        // Update gambar jika diunggah
         if ($request->hasFile('image')) {
             if ($mahasiswa->image) {
                 $oldImagePath = public_path('images/mahasiswa/' . $mahasiswa->image);
@@ -182,33 +230,35 @@ class MahasiswaController extends Controller
             $imageName = $mahasiswa->image;
         }
 
-        // Update data mahasiswa
+        // Simpan data yang diperbarui
         $mahasiswa->nim = $validatedData['nim'];
         $mahasiswa->nama = $validatedData['nama'];
         $mahasiswa->jurusan_id = $validatedData['jurusan_id'];
         $mahasiswa->prodi_id = $validatedData['prodi_id'];
         $mahasiswa->gender = $validatedData['gender'];
         $mahasiswa->email = $validatedData['email'] ?? $mahasiswa->email;
-       // $mahasiswa->password = $validatedData['password'];
+        $mahasiswa->image = $imageName;
         $mahasiswa->save();
 
-        return redirect()->route('mahasiswa')
-            ->with('success', 'Mahasiswa berhasil diupdate.');
+        return redirect()->route('mahasiswa')->with('success', 'Mahasiswa berhasil diupdate.');
     }
 
+    /**
+     * Menghapus data mahasiswa dan file gambar jika ada.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function destroy($id)
     {
         $mahasiswa = Mahasiswa::findOrFail($id);
 
-        // Hapus gambar jika ada
         if ($mahasiswa->image) {
             Storage::disk('public')->delete($mahasiswa->image);
         }
 
-        // Hapus mahasiswa dari database
         $mahasiswa->delete();
 
-        return redirect()->route('mahasiswa')
-            ->with('success', 'Mahasiswa berhasil dihapus.');
+        return redirect()->route('mahasiswa')->with('success', 'Mahasiswa berhasil dihapus.');
     }
 }

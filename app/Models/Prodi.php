@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Prodi extends Model
 {
     use HasFactory;
-    protected $table = 'prodi'; // atau nama tabel yang sesuai
+    protected $table = 'prodi'; 
     protected $fillable = ['prodi', 'jenjang'];
 
     public function pimpinanProdis()
