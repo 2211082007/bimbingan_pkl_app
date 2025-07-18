@@ -50,8 +50,8 @@ class ProdiController extends Controller
     {
         // Validasi input dari form
         $validatedData = $request->validate([
-            'kode_prodi' => 'required|string',
-            'prodi' => 'required|string|max:255',
+            'kode_prodi' => 'required|unique:prodi,kode_prodi',
+            'prodi' => 'required|unique:prodi,prodi',
             'jurusan_id' => 'required|exists:jurusan,id_jurusan',
             'jenjang' => 'required|string|in:D3,D4',
         ]);
